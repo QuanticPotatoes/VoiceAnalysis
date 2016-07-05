@@ -18,6 +18,7 @@
 #include "Spectrograph.h"
 #include "Utility.h"
 #include "FreeImage.h"
+#include "MicInput.h"
 
 #include <iostream>
 #include <cassert>
@@ -33,6 +34,9 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     } else {
         read_in_data();
     }
+
+
+    
 
     // Color for our plot
     // Black
@@ -52,6 +56,7 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     gradient_.add_color({230, 160,   0,   0});
     // Red
     gradient_.add_color({255,   0,   0,   0});
+
 }
 
 void Spectrograph::set_window(std::function<double(int, int)> window){
@@ -72,6 +77,8 @@ void Spectrograph::read_in_data(){
 
     data_ = std::vector<short>(data_size, 0);
     file_handle_.read(&data_[0], data_.size());
+    MicInput micinput;
+    micinput.readMicFlow(&data_);
     max_frequency_ = file_handle_.samplerate() * 0.5;
 }
 
@@ -130,9 +137,9 @@ void Spectrograph::save_image(
         }
     }
 
-    /*std::cout << "Saving to file " << fname << std::endl;
+    std::cout << "Saving to file " << fname << std::endl;
     FreeImage_Save(FIF_PNG, bitmap, fname.c_str(), PNG_DEFAULT);
-    FreeImage_Unload(bitmap);
+    /*FreeImage_Unload(bitmap);
 
     #ifdef FREEIMAGE_LIB
         FreeImage_Deinitialise();

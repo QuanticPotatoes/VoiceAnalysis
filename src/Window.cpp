@@ -13,7 +13,7 @@ Window::Window(int w,int h,Spectrograph *spectro,int *argc,char *argv[]){
 	height = h;
 	spectrograph = spectro;
 	spectrograph->set_window(Utility::blackman_harris);
-    spectrograph->compute(1024, 0.8);
+    spectrograph->compute(512, 0.8);
     spectrograph->save_image("spectrogram.png", false);
 	spectrumInit(argc,argv);
 }
@@ -27,7 +27,7 @@ void Window::spectrumInit(int *argc,char *argv[]){
 	  glutInitWindowSize(width,height);
 	  glutInit(argc, argv);
 	  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
-	  glutCreateWindow("example");
+	  glutCreateWindow("Spectrograph");
 
 	  // initialize some OpenGL state
 	  myglinit();
@@ -65,6 +65,7 @@ void Window::drawfunc() {
 RGBQUAD color;
   for(int x = 0; x < width; x++){
   	for(int y = 0; y < height; y++){
+
   		spectrograph->get_color_by_position(x,y,&color);
   		easel[3*(y*width+x) + 0] = color.rgbRed;
   		easel[3*(y*width+x) + 1] = color.rgbGreen;

@@ -41,10 +41,5 @@ int main(int argc, char *argv[])
 
     Window window(w,h,&spectrograph,&argc,argv);
 
-    spectrograph.set_window(Utility::blackman_harris);
-    spectrograph.compute(1024, 0.8);
-    spectrograph.save_image("spectrogram.png", false);
-    spectrograph.get_color_by_position(10,10,&color);
-    std::cout << color.rgbRed << "\n";
     return 0;
 }

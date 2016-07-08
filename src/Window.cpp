@@ -5,6 +5,8 @@
 int Window::width;
 int Window::height;
 char* Window::easel;
+bool r;
+
 Spectrograph* Window::spectrograph;
 
 Window::Window(int w,int h,Spectrograph *spectro,int *argc,char *argv[]){
@@ -15,6 +17,12 @@ Window::Window(int w,int h,Spectrograph *spectro,int *argc,char *argv[]){
 	spectrograph->set_window(Utility::blackman_harris);
     spectrograph->compute(512, 0.8);
     spectrograph->save_image("spectrogram.png", false);
+
+    std::string s = argv[1];
+    if(s == "--live"){
+      r = true;
+    }
+
 	spectrumInit(argc,argv);
 }
 
@@ -61,6 +69,12 @@ void Window::myglinit() {
 
 // main draw function, gets called over and over, as fast as possible
 void Window::drawfunc() {
+
+  if(r){
+  spectrograph->read_in_data();
+  spectrograph->compute(512, 0.8);
+  spectrograph->save_image("spectrogram.png", false);
+  }
 
 RGBQUAD color;
   for(int x = 0; x < width; x++){

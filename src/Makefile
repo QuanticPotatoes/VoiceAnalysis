@@ -1,3 +1,3 @@
 
-all: *.cpp include/*
-	g++ -o spectro src/*.cpp -I include -std=c++11 -lfreeimageplus -lsndfile -lGL -lGLU -lglut -lpulse -lpulse-simple
+all: *.cpp ../include/*
+	g++ -o ../build/spectro *.cpp -I ../include -std=c++11 -lfreeimageplus -lsndfile -lGL -lGLU -lglut -lpulse -lpulse-simple -lpthread

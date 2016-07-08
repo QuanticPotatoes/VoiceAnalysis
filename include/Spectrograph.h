@@ -28,6 +28,9 @@
 
 #include "ColorGradient.h"
 #include "FreeImage.h"
+#include "Utility.h"
+#include "FreeImage.h"
+#include "MicInput.h"
 
 class Spectrograph {
 public:
@@ -37,6 +40,7 @@ public:
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
 
     FIBITMAP *bitmap;
+    MicInput micinput;
 
     int width();
     int height();
@@ -57,6 +61,7 @@ public:
     void pad(std::vector<std::complex<double>>& signal, int new_size);
     int pad_to_power2(std::vector<std::complex<double>>& signal, int min_size);
     void get_color_by_position(int x,int y,RGBQUAD *color);
+    void read_in_data();
 private:
     void _transform(std::vector<std::complex<double>>& signal, int min_size = -1);
     int get_number_of_chunks(const int CHUNK_SIZE, const int STEP);
@@ -65,7 +70,7 @@ private:
     
     RGBQUAD get_color(std::complex<double>& c, float threshold);
     std::complex<double> omega(float p, float q);
-    void read_in_data();
+    
 
     std::string fname_;
 

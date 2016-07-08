@@ -4,7 +4,9 @@
 #include <deque>
 #include <vector>
 #include <time.h>
+#include <cmath>
 #include <errno.h>
+#include <pthread.h>
 #include "pulse/simple.h"
 #include "pulse/error.h"
 #define BUFSIZE 1024
@@ -18,21 +20,16 @@ public:
 
 	void FlowRefresh(void);
 
-	int size(void){
-		return micFlow.size();
-	}
-	int channels(void){
-		return ss.channels;
-	}
-	int samplerate(void){
-		return ss.rate;
-	}
+	int frames(void);
+	int channels(void);
+	int samplerate(void);
+
 private:
-	std::deque<int> micFlow;
+	std::deque<short> micFlow;
 	pa_simple *paconn;
 	pa_sample_spec ss;
 
-	uint8_t buf[BUFSIZE];
+	short buf[BUFSIZE];
 
 	int error;
 

@@ -29,10 +29,7 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
         std::cerr << "Error Loading file " << fname << std::endl;
     } else {
         read_in_data();
-    }
-
-
-    
+    }    
 
     // Color for our plot
     // Black
@@ -70,11 +67,8 @@ void Spectrograph::read_in_data(){
         //std::cout << "Reading in microphone" << std::endl;
 
         int audio_length_sec = micinput.frames() / micinput.samplerate();
-        std::cout << "Length (s): " << audio_length_sec << std::endl;
 
         const int data_size = micinput.frames();//micinput.channels() * micinput.frames();
-
-         std::cout << "taille :" << data_size << " " << micinput.channels() << " " << micinput.frames() << " " << micinput.samplerate() << std::endl;
 
         data_ = std::vector<short>(data_size, 0);
 
@@ -123,12 +117,16 @@ std::complex<double> Spectrograph::omega(float p, float q){
 void Spectrograph::save_image(
         std::string fname, 
         bool log_mode){
+
+    if(!imageinit){
     //
     // Active for static linking
     #ifdef FREEIMAGE_LIB
         FreeImage_Initialise();
     #endif
     bitmap = FreeImage_Allocate(spectrogram_.size(), height_, 32); // RGBA
+    imageinit = true;
+    }
 
     const int data_size = spectrogram_.front().size();
     // Only the data below 1/2 of the sampling rate (nyquist frequency)
@@ -141,8 +139,7 @@ void Spectrograph::save_image(
 
     const double log_coef = 
         (1.0/log(static_cast<double>(height_ + 1))) * static_cast<double>(data_size_used);
-
-    std::cout << "Drawing." << std::endl;
+        
     for (int x = 0; x < spectrogram_.size(); x++){
         int freq = 0;
         for (int y = 1; y <= height_; y++){
@@ -161,8 +158,8 @@ void Spectrograph::save_image(
 
     /* std::cout << "Saving to file " << fname << std::endl;
     FreeImage_Save(FIF_PNG, bitmap, fname.c_str(), PNG_DEFAULT);
-    /*FreeImage_Unload(bitmap);
-    */
+    FreeImage_Unload(bitmap);*/
+    
     #ifdef FREEIMAGE_LIB
         FreeImage_Deinitialise();
     #endif

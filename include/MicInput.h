@@ -5,6 +5,7 @@
 #include <vector>
 #include <time.h>
 #include <cmath>
+#include <unistd.h>
 #include <errno.h>
 #include <pthread.h>
 #include "pulse/simple.h"

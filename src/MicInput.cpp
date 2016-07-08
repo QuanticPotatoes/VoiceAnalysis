@@ -31,9 +31,9 @@ MicInput::MicInput(void){
 		micFlow.push_front(1000*sin(i));
 	}
 
-	//ti = pthread_create(&t,NULL,MicTask,(void*)this);
+	ti = pthread_create(&t,NULL,MicTask,(void*)this);
 
-	//pthread_detach(t);
+    pthread_detach(t);
 
 
 }
@@ -65,7 +65,7 @@ void MicInput::FlowRefresh(void){
 	for(short i : buf){
 
 		micFlow.push_front(i); // Add microphone sound in front
-		//micFlow.pop_back(); //remove useless sound in back
+		micFlow.pop_back(); //remove useless sound in back
 
 	}
 
@@ -75,10 +75,12 @@ void *MicTask(void *arg){
 
 	time_t t2,t1 = time(NULL);
 	t2 = t1;
-
+	
 	MicInput *mic = (MicInput*) arg;
-	while((t2 - t1) < 9){
+	while(1){
 	mic->FlowRefresh();
 	t2 = time(NULL);
+
+	nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
 	}
 }

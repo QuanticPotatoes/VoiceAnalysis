@@ -28,14 +28,15 @@ int main(int argc, char *argv[])
     RGBQUAD color;
 
     if (argc < 2){
-        std::cout << "You must specify an input file." << std::endl;
+        std::cout << "You must specify an input file or an option (--live)." << std::endl;
         return -1;
     }
+
     std::string fname(argv[1]);
 
     Spectrograph spectrograph(fname,w,h);
 
-    if (!spectrograph.file_is_valid()){
+    if (!spectrograph.file_is_valid() && !(argv[1] == "--live")){
         return -1;
     }
 

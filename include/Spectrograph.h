@@ -85,6 +85,8 @@ private:
 
     float max_frequency_ = 0.5 * 44800;
 
+    bool imageinit;
+
     std::function<double(int, int)> window_;
     std::map<float, std::complex<double>> omega_cache_;
 };

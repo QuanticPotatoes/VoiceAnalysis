@@ -26,13 +26,18 @@ int main(int argc, char *argv[])
 { 
     int w = 800, h = 600;
     RGBQUAD color;
+    std::string fname = "--live";
 
     if (argc < 2){
-        std::cout << "You must specify an input file or an option (--live)." << std::endl;
-        return -1;
+        std::cout << "You must specify an input file. By default the program start with (--live)." << std::endl;
+        argv[1] = (char*) "--live";
+    }
+    else{
+
+        fname = argv[1]; 
     }
 
-    std::string fname(argv[1]);
+
 
     Spectrograph spectrograph(fname,w,h);
 

@@ -64,19 +64,15 @@ void Spectrograph::read_in_data(){
 
     if(fname_ == "--live"){
 
-        //std::cout << "Reading in microphone" << std::endl;
-
         int audio_length_sec = micinput.frames() / micinput.samplerate();
 
-        const int data_size = micinput.frames();//micinput.channels() * micinput.frames();
+        const int data_size = micinput.frames();
 
         data_ = std::vector<short>(data_size, 0);
 
         micinput.readMicFlow(&data_);
 
         max_frequency_ = micinput.samplerate() * 0.5;
-
-        //micinput.FlowRefresh();
 
     }
     else {
@@ -139,7 +135,7 @@ void Spectrograph::save_image(
 
     const double log_coef = 
         (1.0/log(static_cast<double>(height_ + 1))) * static_cast<double>(data_size_used);
-        
+
     for (int x = 0; x < spectrogram_.size(); x++){
         int freq = 0;
         for (int y = 1; y <= height_; y++){
@@ -155,10 +151,6 @@ void Spectrograph::save_image(
             }
         }
     }
-
-    /* std::cout << "Saving to file " << fname << std::endl;
-    FreeImage_Save(FIF_PNG, bitmap, fname.c_str(), PNG_DEFAULT);
-    FreeImage_Unload(bitmap);*/
     
     #ifdef FREEIMAGE_LIB
         FreeImage_Deinitialise();
@@ -184,21 +176,12 @@ void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
     assert(0.0 <= OVERLAP && OVERLAP < 1.0);
     const int STEP = static_cast<int>(CHUNK_SIZE * (1.0 - OVERLAP));
 
-    // Print out computation info
-    /*std::cout << "Computing spectrogram..." << std::endl;
-    std::cout << "Chunk: " << CHUNK_SIZE << " Overlap: " 
-              << OVERLAP * CHUNK_SIZE << std::endl;
-
-    std::cout << "Step Size: " << STEP << std::endl;
-    std::cout << "Data Size: " << data_.size() << std::endl;*/
-
     // Pad the data
     int new_size = 0;
     while (new_size + CHUNK_SIZE < data_.size()){
         new_size += STEP;
     }
     if (new_size != data_.size()){
-        //std::cout << "Padding data." << std::endl;
         new_size += CHUNK_SIZE;
         std::vector<short> padding(new_size - data_.size(), 0);
         data_.insert(data_.end(), padding.begin(), padding.end());

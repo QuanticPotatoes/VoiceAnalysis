@@ -74,8 +74,8 @@ void Window::drawfunc() {
 
   if(r){
   spectrograph->read_in_data();
-  spectrograph->compute(512, 0.8);
-  spectrograph->save_image("spectrogram.png", false);
+  spectrograph->compute(1024, 0.8);
+  spectrograph->save_image("spectrogram.png", true);
   }
 
 RGBQUAD color;

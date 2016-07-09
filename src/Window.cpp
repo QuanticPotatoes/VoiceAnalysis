@@ -15,8 +15,6 @@ Window::Window(int w,int h,Spectrograph *spectro,int *argc,char *argv[]){
 	height = h;
 	spectrograph = spectro;
 	spectrograph->set_window(Utility::blackman_harris);
-    spectrograph->compute(1024, 0.8);
-    spectrograph->save_image("spectrogram.png", false);
 
     std::string s = argv[1];
     if(s == "--live"){
@@ -99,5 +97,6 @@ RGBQUAD color;
   // instruct event system to call 'drawfunc' again
   glutPostRedisplay();
 
-  nanosleep((const struct timespec[]){{0, 450000000L}}, NULL);
+  //nanosleep((const struct timespec[]){{0, 450000000L}}, NULL);
+  usleep(450000);
 }

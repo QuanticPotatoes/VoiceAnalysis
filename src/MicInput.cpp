@@ -26,7 +26,7 @@ MicInput::MicInput(void){
 		      pa_strerror(error));
 	}
 
-	for (int i = 0; i < 285184; ++i)
+	for (int i = 0; i < 1024; ++i)
 	{
 		micFlow.push_front(1000*sin(i));
 	}
@@ -64,8 +64,9 @@ void MicInput::FlowRefresh(void){
 
 	for(short i : buf){
 
-		micFlow.push_front(i); // Add microphone sound in front
 		micFlow.pop_back(); //remove useless sound in back
+		micFlow.push_front(i); // Add microphone sound in front
+		
 
 	}
 

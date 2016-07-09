@@ -20,6 +20,9 @@
 #include <cassert>
 #include <cmath>
 
+bool lol;
+int b;
+int num_chunks;
 
 Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
@@ -74,6 +77,20 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = micinput.samplerate() * 0.5;
 
+        if(!lol){
+        //Init the spectrogram
+        complex_d c(0,0);
+        for(int j = 0; j < width_; j++){
+        spectrogram_i.push_front(std::deque<complex_d>());
+
+        for (int i = 0; i < max_frequency_; ++i)
+            {
+            spectrogram_i.front().push_front(c);
+            }
+        }
+        std::cout << "fini" << std::endl;
+        lol = true;
+        }
     }
     else {
 
@@ -120,11 +137,11 @@ void Spectrograph::save_image(
     #ifdef FREEIMAGE_LIB
         FreeImage_Initialise();
     #endif
-    bitmap = FreeImage_Allocate(spectrogram_.size(), height_, 32); // RGBA
+    bitmap = FreeImage_Allocate(spectrogram_i.size(), height_, 32); // RGBA
     imageinit = true;
     }
 
-    const int data_size = spectrogram_.front().size();
+    const int data_size = spectrogram_i.front().size();
     // Only the data below 1/2 of the sampling rate (nyquist frequency)
     // is useful
     float multiplier = 0.5;
@@ -136,11 +153,11 @@ void Spectrograph::save_image(
     const double log_coef = 
         (1.0/log(static_cast<double>(height_ + 1))) * static_cast<double>(data_size_used);
 
-    for (int x = 0; x < spectrogram_.size(); x++){
+    for (int x = 0; x < spectrogram_i.size(); x++){
         int freq = 0;
         for (int y = 1; y <= height_; y++){
 
-            RGBQUAD color = get_color(spectrogram_[x][freq], 15);
+            RGBQUAD color = get_color(spectrogram_i[x][freq], 15);
             FreeImage_SetPixelColor(bitmap, x, y - 1, &color);
             
             if (log_mode){
@@ -188,6 +205,21 @@ void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
     }
 
     chunkify(CHUNK_SIZE, STEP);
+    read_in_spectrum();
+}
+
+void Spectrograph::read_in_spectrum(void){
+
+    spectrogram_i.pop_back();
+    //spectrogram_i.clear();
+    spectrogram_i.push_front(std::deque<complex_d>());
+
+    for (int i = 0; i < spectrogram_[0].size(); ++i)
+    {
+        complex_d c = spectrogram_[0][i];
+        spectrogram_i.front().push_front(c);
+    }
+
 }
 
 int Spectrograph::get_number_of_chunks(const int CHUNK_SIZE, const int STEP){
@@ -203,15 +235,17 @@ int Spectrograph::get_number_of_chunks(const int CHUNK_SIZE, const int STEP){
 }
 
 void Spectrograph::chunkify(const int CHUNK_SIZE, const int STEP){
+    
     spectrogram_.clear();
+
     // spectrogram_.reserve((data_.size() - CHUNK_SIZE)/STEP + 1);
-    spectrogram_.reserve(width_);
+    spectrogram_.reserve(1);
 
     //std::cout << "Computing chunks." << std::endl;
-    int num_chunks = get_number_of_chunks(CHUNK_SIZE, STEP);
+    num_chunks = get_number_of_chunks(CHUNK_SIZE, STEP);
     //std::cout << "Number of Chunks: " << num_chunks << std::endl;
 
-    float chunk_width_ratio = static_cast<float>(num_chunks)/width_;
+    float chunk_width_ratio = static_cast<float>(num_chunks)/1;
 
     int j = 0;
     float float_j = 0.0;

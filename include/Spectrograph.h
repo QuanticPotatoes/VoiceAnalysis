@@ -21,6 +21,7 @@
 #include <string>
 #include <sndfile.hh>
 #include <vector>
+#include <deque>
 #include <complex>
 #include <functional>
 
@@ -38,6 +39,7 @@ public:
     
     typedef std::function<double(int, int)> Window_t;
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
+    typedef std::deque< std::deque<std::complex<double> > > Spectrogram_i;
 
     FIBITMAP *bitmap;
     MicInput micinput;
@@ -66,6 +68,7 @@ private:
     void _transform(std::vector<std::complex<double>>& signal, int min_size = -1);
     int get_number_of_chunks(const int CHUNK_SIZE, const int STEP);
     void chunkify(const int CHUNK_SIZE, const int STEP);
+    void read_in_spectrum(void);
 
     
     RGBQUAD get_color(std::complex<double>& c, float threshold);
@@ -78,6 +81,7 @@ private:
     std::vector<short> data_;
 
     Spectrogram_t spectrogram_;
+    Spectrogram_i spectrogram_i;
     ColorGradient gradient_;
 
     int height_ = 480;

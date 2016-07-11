@@ -27,11 +27,14 @@
 
 #include <map>
 
+#include <pthread.h>
+
 #include "ColorGradient.h"
 #include "FreeImage.h"
 #include "Utility.h"
 #include "FreeImage.h"
 #include "MicInput.h"
+
 
 class Spectrograph {
 public:
@@ -39,7 +42,7 @@ public:
     
     typedef std::function<double(int, int)> Window_t;
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
-    typedef std::deque< std::deque<std::complex<double> > > Spectrogram_i;
+    typedef std::deque< std::vector<std::complex<double> > > Spectrogram_i;
 
     FIBITMAP *bitmap;
     MicInput micinput;
@@ -64,6 +67,7 @@ public:
     int pad_to_power2(std::vector<std::complex<double>>& signal, int min_size);
     void get_color_by_position(int x,int y,RGBQUAD *color);
     void read_in_data();
+    void spectroRefresh(void);
 private:
     void _transform(std::vector<std::complex<double>>& signal, int min_size = -1);
     int get_number_of_chunks(const int CHUNK_SIZE, const int STEP);

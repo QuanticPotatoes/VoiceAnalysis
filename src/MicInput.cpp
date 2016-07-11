@@ -1,15 +1,15 @@
 #include "MicInput.h"
+#include "Spectrograph.h"
+#include <chrono>
 
+Spectrograph *spectre = NULL;
 void *MicTask(void *arg);
 
-MicInput::MicInput(void){
+MicInput::MicInput(){
 
 	ss.format = PA_SAMPLE_S16NE;
 	ss.channels = 1;
 	ss.rate = 44100;
-
-	pthread_t t;
-	int ti;
 
 	if(!(paconn = pa_simple_new(NULL,
 						"micrecord",
@@ -25,8 +25,13 @@ MicInput::MicInput(void){
 		      fprintf(stderr, __FILE__": pa_simple_new() failed: %s\n", 
 		      pa_strerror(error));
 	}
+}
 
-	for (int i = 0; i < 1024; ++i)
+void MicInput::init(void *s){
+
+	spectre = (Spectrograph*) s;
+
+	for (int i = 0; i < BUFSIZE; ++i)
 	{
 		micFlow.push_front(1000*sin(i));
 	}
@@ -34,7 +39,6 @@ MicInput::MicInput(void){
 	ti = pthread_create(&t,NULL,MicTask,(void*)this);
 
     pthread_detach(t);
-
 
 }
 
@@ -61,27 +65,22 @@ void MicInput::readMicFlow(std::vector<short> *ptr){
 void MicInput::FlowRefresh(void){
 
 	pa_simple_read(paconn,buf,sizeof(buf),&error);
-
 	for(short i : buf){
 
 		micFlow.pop_back(); //remove useless sound in back
 		micFlow.push_front(i); // Add microphone sound in front
-		
-
 	}
 
 }
 
 void *MicTask(void *arg){
-
-	time_t t2,t1 = time(NULL);
-	t2 = t1;
 	
 	MicInput *mic = (MicInput*) arg;
-	while(1){
-	mic->FlowRefresh();
-	t2 = time(NULL);
 
-	nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
+	while(1){
+
+	mic->FlowRefresh();
+
+
 	}
 }

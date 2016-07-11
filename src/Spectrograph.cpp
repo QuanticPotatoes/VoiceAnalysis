@@ -18,6 +18,7 @@
 #include "Spectrograph.h"
 #include <iostream>
 #include <cassert>
+#include <chrono>
 #include <cmath>
 
 bool lol;
@@ -27,6 +28,9 @@ int num_chunks;
 Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
     window_(Utility::hann_function) {
+
+    micinput.init((void*)this);
+    
 
     if (!file_handle_){
         std::cerr << "Error Loading file " << fname << std::endl;
@@ -53,6 +57,33 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     // Red
     gradient_.add_color({255,   0,   0,   0});
 
+
+}
+
+
+void *ThreadTask(void *arg){
+
+
+    Spectrograph *spec = (Spectrograph*) arg;
+    while(1){
+
+    spec->read_in_data();   
+
+    spec->compute(1024, 0.8);
+
+    spec->save_image("spectrogram.png", true);
+
+    nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
+    }
+}
+
+void Spectrograph::spectroRefresh(void){
+    pthread_t t;
+
+    pthread_create(&t,NULL,ThreadTask,(void*)this);
+
+    pthread_detach(t);
+
 }
 
 void Spectrograph::set_window(std::function<double(int, int)> window){
@@ -64,6 +95,7 @@ bool Spectrograph::file_is_valid(){
 }
 
 void Spectrograph::read_in_data(){
+
 
     if(fname_ == "--live"){
 
@@ -77,20 +109,21 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = micinput.samplerate() * 0.5;
 
-        if(!lol){
+
+
+        /*if(!lol){
         //Init the spectrogram
         complex_d c(0,0);
         for(int j = 0; j < width_; j++){
-        spectrogram_i.push_front(std::deque<complex_d>());
+        spectrogram_i.push_front(std::vector<complex_d>());
 
         for (int i = 0; i < max_frequency_; ++i)
             {
-            spectrogram_i.front().push_front(c);
+            spectrogram_i.front().push_back(c);
             }
         }
-        std::cout << "fini" << std::endl;
         lol = true;
-        }
+        }*/
     }
     else {
 
@@ -137,11 +170,11 @@ void Spectrograph::save_image(
     #ifdef FREEIMAGE_LIB
         FreeImage_Initialise();
     #endif
-    bitmap = FreeImage_Allocate(spectrogram_i.size(), height_, 32); // RGBA
+    bitmap = FreeImage_Allocate(width_, height_, 32); // RGBA
     imageinit = true;
     }
 
-    const int data_size = spectrogram_i.front().size();
+    const int data_size = spectrogram_.front().size();
     // Only the data below 1/2 of the sampling rate (nyquist frequency)
     // is useful
     float multiplier = 0.5;
@@ -153,11 +186,11 @@ void Spectrograph::save_image(
     const double log_coef = 
         (1.0/log(static_cast<double>(height_ + 1))) * static_cast<double>(data_size_used);
 
-    for (int x = 0; x < spectrogram_i.size(); x++){
+    for (int x = 0; x < spectrogram_.size(); x++){
         int freq = 0;
         for (int y = 1; y <= height_; y++){
 
-            RGBQUAD color = get_color(spectrogram_i[x][freq], 15);
+            RGBQUAD color = get_color(spectrogram_[x][freq], 15);
             FreeImage_SetPixelColor(bitmap, x, y - 1, &color);
             
             if (log_mode){
@@ -205,20 +238,28 @@ void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
     }
 
     chunkify(CHUNK_SIZE, STEP);
-    read_in_spectrum();
+    //read_in_spectrum();
 }
 
 void Spectrograph::read_in_spectrum(void){
 
-    spectrogram_i.pop_back();
-    //spectrogram_i.clear();
-    spectrogram_i.push_front(std::deque<complex_d>());
-
-    for (int i = 0; i < spectrogram_[0].size(); ++i)
+    for (int i = 0; i < spectrogram_.size(); ++i)
     {
-        complex_d c = spectrogram_[0][i];
-        spectrogram_i.front().push_front(c);
+        spectrogram_i.pop_back();
     }
+    
+    //spectrogram_i.clear();
+    spectrogram_i.push_front(std::vector<complex_d>());
+
+    for (int i = 0; i < spectrogram_.size(); ++i)
+    {
+            for (int j = 0; j < spectrogram_[i].size(); ++j)
+            {
+                complex_d c = spectrogram_[i][j];
+                spectrogram_i.front().push_back(c);
+            }
+    }
+
 
 }
 

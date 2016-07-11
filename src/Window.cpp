@@ -68,12 +68,9 @@ void Window::myglinit() {
 // main draw function, gets called over and over, as fast as possible
 void Window::drawfunc() {
 
-
-
   if(r){
-  spectrograph->read_in_data();
-  spectrograph->compute(1024, 0.8);
-  spectrograph->save_image("spectrogram.png", true);
+  spectrograph->spectroRefresh();
+  r = false;
   }
 
 RGBQUAD color;
@@ -97,6 +94,6 @@ RGBQUAD color;
   // instruct event system to call 'drawfunc' again
   glutPostRedisplay();
 
-  //nanosleep((const struct timespec[]){{0, 450000000L}}, NULL);
-  usleep(450000);
+  nanosleep((const struct timespec[]){{0, 450000000L}}, NULL);
+  
 }

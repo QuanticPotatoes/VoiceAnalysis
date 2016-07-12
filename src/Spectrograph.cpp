@@ -83,7 +83,7 @@ void Spectrograph::spectroRefresh(void){
     pthread_create(&t,NULL,ThreadTask,(void*)this);
 
     pthread_detach(t);
-
+    
 }
 
 void Spectrograph::set_window(std::function<double(int, int)> window){
@@ -111,7 +111,7 @@ void Spectrograph::read_in_data(){
 
 
 
-        /*if(!lol){
+        if(!lol){
         //Init the spectrogram
         complex_d c(0,0);
         for(int j = 0; j < width_; j++){
@@ -123,7 +123,7 @@ void Spectrograph::read_in_data(){
             }
         }
         lol = true;
-        }*/
+        }
     }
     else {
 

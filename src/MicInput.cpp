@@ -2,7 +2,13 @@
 #include "Spectrograph.h"
 #include <chrono>
 
-Spectrograph *spectre = NULL;
+typedef struct taskStruc {
+	Spectrograph *spectrum = NULL;
+	MicInput *mic = NULL;
+} taskStruc;
+
+taskStruc ts;
+
 void *MicTask(void *arg);
 
 MicInput::MicInput(){
@@ -29,14 +35,15 @@ MicInput::MicInput(){
 
 void MicInput::init(void *s){
 
-	spectre = (Spectrograph*) s;
+	ts.spectrum = (Spectrograph*) s;
+	ts.mic = this;
 
 	for (int i = 0; i < BUFSIZE; ++i)
 	{
 		micFlow.push_front(1000*sin(i));
 	}
 
-	ti = pthread_create(&t,NULL,MicTask,(void*)this);
+	ti = pthread_create(&t,NULL,MicTask,(void*)&ts);
 
     pthread_detach(t);
 
@@ -75,11 +82,14 @@ void MicInput::FlowRefresh(void){
 
 void *MicTask(void *arg){
 	
-	MicInput *mic = (MicInput*) arg;
+	taskStruc *tts = (taskStruc*) arg;
 
 	while(1){
 
-	mic->FlowRefresh();
+	tts->mic->FlowRefresh();
+	tts->spectrum->read_in_data(); 
+	tts->spectrum->compute(1024, 0.8);
+	tts->spectrum->save_image("spectrogram.png", true);
 
 
 	}

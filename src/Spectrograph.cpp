@@ -25,17 +25,23 @@ bool lol;
 int b;
 int num_chunks;
 
+
+    typedef struct taskStruc {
+    Spectrograph *spectrum = NULL;
+    MicInput *mic = NULL;
+    } taskStruc;
+
 Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
     window_(Utility::hann_function) {
 
-    micinput.init((void*)this);
+    spectroRefresh();
     
 
     if (!file_handle_){
         std::cerr << "Error Loading file " << fname << std::endl;
     } else {
-        read_in_data();
+       // read_in_data();
     }    
 
     // Color for our plot
@@ -63,15 +69,19 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
 
 void *ThreadTask(void *arg){
 
+    taskStruc *tts = (taskStruc*) arg;
 
-    Spectrograph *spec = (Spectrograph*) arg;
+    tts->spectrum->read_in_data();
+
     while(1){
 
-    spec->read_in_data();   
+    tts->mic->FlowRefresh();
 
-    spec->compute(1024, 0.8);
+    tts->spectrum->sendToMicFlow();
 
-    spec->save_image("spectrogram.png", true);
+    tts->spectrum->compute(2048, 0.99);
+
+    tts->spectrum->save_image("spectrogram.png", true);
 
     nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
     }
@@ -80,7 +90,11 @@ void *ThreadTask(void *arg){
 void Spectrograph::spectroRefresh(void){
     pthread_t t;
 
-    pthread_create(&t,NULL,ThreadTask,(void*)this);
+    taskStruc *ts; // Struc which contains the pointer spectrograph and micinput
+    ts->spectrum = this;
+    ts->mic = &micinput;
+
+    pthread_create(&t,NULL,ThreadTask,(void*)ts);
 
     pthread_detach(t);
     
@@ -92,6 +106,12 @@ void Spectrograph::set_window(std::function<double(int, int)> window){
 
 bool Spectrograph::file_is_valid(){
     return file_handle_;
+}
+
+void Spectrograph::sendToMicFlow(){
+
+    micinput.readMicFlow(&data_);
+
 }
 
 void Spectrograph::read_in_data(){
@@ -109,21 +129,17 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = micinput.samplerate() * 0.5;
 
+        spectrogram_i = Spectrogram_i(width_);
 
-
-        if(!lol){
-        //Init the spectrogram
-        complex_d c(0,0);
-        for(int j = 0; j < width_; j++){
-        spectrogram_i.push_front(std::vector<complex_d>());
-
-        for (int i = 0; i < max_frequency_; ++i)
+        for (int i = 0; i < width_; ++i)
+        {
+            for (int j = 0; j < height_; ++j)
             {
-            spectrogram_i.front().push_back(c);
-            }
+                RGBQUAD c = {0,0,0,0};
+                spectrogram_i[i].push_back(c);
+            }   
         }
-        lol = true;
-        }
+
     }
     else {
 
@@ -188,10 +204,16 @@ void Spectrograph::save_image(
 
     for (int x = 0; x < spectrogram_.size(); x++){
         int freq = 0;
+
+        spectrogram_i.pop_back();
+
+        spectrogram_i.push_front(std::vector<RGBQUAD>());
+
         for (int y = 1; y <= height_; y++){
 
-            RGBQUAD color = get_color(spectrogram_[x][freq], 15);
-            FreeImage_SetPixelColor(bitmap, x, y - 1, &color);
+            RGBQUAD color = get_color(spectrogram_[x/2][freq/1.5], 15);
+            
+            spectrogram_i.front().push_back(color);
             
             if (log_mode){
                 freq = data_size_used - 1 - static_cast<int>(log_coef * log(height_ + 1 - y));
@@ -199,6 +221,14 @@ void Spectrograph::save_image(
                 float ratio = static_cast<float>(y)/height_;
                 freq = static_cast<int>(ratio * data_size_used);
             }
+        }
+    }
+
+    for (int i = 0; i < spectrogram_i.size(); ++i)
+    {
+        for (int j = 0; j < height_; ++j)
+        {
+            FreeImage_SetPixelColor(bitmap, i, j, &spectrogram_i[i][j]);
         }
     }
     
@@ -243,7 +273,7 @@ void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
 
 void Spectrograph::read_in_spectrum(void){
 
-    for (int i = 0; i < spectrogram_.size(); ++i)
+    /*for (int i = 0; i < spectrogram_.size(); ++i)
     {
         spectrogram_i.pop_back();
     }
@@ -258,7 +288,7 @@ void Spectrograph::read_in_spectrum(void){
                 complex_d c = spectrogram_[i][j];
                 spectrogram_i.front().push_back(c);
             }
-    }
+    }*/
 
 
 }
@@ -280,13 +310,13 @@ void Spectrograph::chunkify(const int CHUNK_SIZE, const int STEP){
     spectrogram_.clear();
 
     // spectrogram_.reserve((data_.size() - CHUNK_SIZE)/STEP + 1);
-    spectrogram_.reserve(1);
+    spectrogram_.reserve(2);
 
     //std::cout << "Computing chunks." << std::endl;
     num_chunks = get_number_of_chunks(CHUNK_SIZE, STEP);
     //std::cout << "Number of Chunks: " << num_chunks << std::endl;
 
-    float chunk_width_ratio = static_cast<float>(num_chunks)/1;
+    float chunk_width_ratio = static_cast<float>(num_chunks)/2;
 
     int j = 0;
     float float_j = 0.0;

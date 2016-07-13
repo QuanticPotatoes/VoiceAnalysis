@@ -94,6 +94,6 @@ RGBQUAD color;
   // instruct event system to call 'drawfunc' again
   glutPostRedisplay();
 
-  nanosleep((const struct timespec[]){{0, 35000000L}}, NULL);
+  nanosleep((const struct timespec[]){{0, 40000000L}}, NULL);
   
 }

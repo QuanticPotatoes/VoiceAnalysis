@@ -42,10 +42,11 @@ public:
     
     typedef std::function<double(int, int)> Window_t;
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
-    typedef std::deque< std::vector<std::complex<double> > > Spectrogram_i;
+    typedef std::deque< std::vector<RGBQUAD> > Spectrogram_i;
 
     FIBITMAP *bitmap;
     MicInput micinput;
+    Spectrogram_i spectrogram_i;
 
     int width();
     int height();
@@ -68,6 +69,7 @@ public:
     void get_color_by_position(int x,int y,RGBQUAD *color);
     void read_in_data();
     void spectroRefresh(void);
+    void sendToMicFlow(void);
 private:
     void _transform(std::vector<std::complex<double>>& signal, int min_size = -1);
     int get_number_of_chunks(const int CHUNK_SIZE, const int STEP);
@@ -85,7 +87,7 @@ private:
     std::vector<short> data_;
 
     Spectrogram_t spectrogram_;
-    Spectrogram_i spectrogram_i;
+    
     ColorGradient gradient_;
 
     int height_ = 480;

@@ -35,8 +35,8 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
     window_(Utility::hann_function) {
 
+    list.push(height);
     spectroRefresh();
-    
 
     if (!file_handle_){
         std::cerr << "Error Loading file " << fname << std::endl;
@@ -79,11 +79,11 @@ void *ThreadTask(void *arg){
 
     tts->spectrum->sendToMicFlow();
 
-    tts->spectrum->compute(2048, 0.99);
+    tts->spectrum->compute(4096, 0.99);
 
     tts->spectrum->save_image("spectrogram.png", true);
 
-    nanosleep((const struct timespec[]){{0, 10000000L}}, NULL);
+    usleep(10000);
     }
 }
 
@@ -202,6 +202,7 @@ void Spectrograph::save_image(
     const double log_coef = 
         (1.0/log(static_cast<double>(height_ + 1))) * static_cast<double>(data_size_used);
 
+    
     for (int x = 0; x < spectrogram_.size(); x++){
         int freq = 0;
 
@@ -209,9 +210,9 @@ void Spectrograph::save_image(
 
         spectrogram_i.push_front(std::vector<RGBQUAD>());
 
-        for (int y = 1; y <= height_; y++){
+        for (int y = 1; y <= height_;  y++){
 
-            RGBQUAD color = get_color(spectrogram_[x/2][freq/1.5], 15);
+            RGBQUAD color = get_color(spectrogram_[x][freq/1.5], 15);
             
             spectrogram_i.front().push_back(color);
             

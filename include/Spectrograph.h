@@ -34,6 +34,7 @@
 #include "Utility.h"
 #include "FreeImage.h"
 #include "MicInput.h"
+#include "List.h"
 
 
 class Spectrograph {
@@ -99,6 +100,8 @@ private:
 
     std::function<double(int, int)> window_;
     std::map<float, std::complex<double>> omega_cache_;
+
+    List list;
 };
 
 #endif /* SPECTROGRAPH_H_ */

@@ -6,12 +6,13 @@ int Window::width;
 int Window::height;
 char* Window::easel;
 bool r;
+int multiplier = 1;
 
 Spectrograph* Window::spectrograph;
 
 Window::Window(int w,int h,Spectrograph *spectro,int *argc,char *argv[]){
 
-	width = w;
+	width = w*multiplier;
 	height = h;
 	spectrograph = spectro;
 	spectrograph->set_window(Utility::blackman_harris);
@@ -73,7 +74,7 @@ void Window::drawfunc() {
   r = false;
   }*/
 
-RGBQUAD color;
+ RGBQUAD color;
   for(int x = 0; x < width; x++){
   	for(int y = 0; y < height; y++){
 
@@ -93,7 +94,7 @@ RGBQUAD color;
 
   // instruct event system to call 'drawfunc' again
   glutPostRedisplay();
-
-  nanosleep((const struct timespec[]){{0, 40000000L}}, NULL);
+ 
+  usleep(40000);
   
 }

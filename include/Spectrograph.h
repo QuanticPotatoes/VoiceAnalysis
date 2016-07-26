@@ -47,7 +47,6 @@ public:
 
     FIBITMAP *bitmap;
     MicInput micinput;
-    Spectrogram_i spectrogram_i;
 
     int width();
     int height();

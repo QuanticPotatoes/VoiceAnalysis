@@ -31,11 +31,10 @@ public:
 	void pop();
 	void recycle();
 
-
-
+	Node *first;
 private:
 
 	llist ma_liste = NULL;
 
-	Node *first;
+	
 };

@@ -6,18 +6,18 @@ LinkedList::LinkedList(){
 }
 
 void LinkedList::add(int height){
-	Node *newNode = (Node*) malloc(sizeof(Node));
-	/*if(!newNode){
+	Node *newNode = (Node*) malloc(sizeof(Node) );
+	if(!newNode){
 		exit(EXIT_FAILURE);
-	}*/
+	}
 	
+	newNode->data = (RGBQUAD*) malloc(sizeof(RGBQUAD)*height);
 	newNode->prev = ma_liste;
-	newNode->data = (RGBQUAD*) malloc(sizeof(RGBQUAD*)*height);
-	newNode->test = 0;
 	
-	//std::cout << ma_liste->test << std::endl;
-	if(ma_liste != NULL){ 
+	newNode->test = 0;
 
+	if(ma_liste != NULL){ 
+		
 		if(ma_liste->prev == NULL){
 			first = newNode;
 			newNode->next = NULL;
@@ -26,7 +26,7 @@ void LinkedList::add(int height){
 		else {
 			ma_liste->next = newNode;
 		}
-
+	
 	}
 	else {
 		first = newNode;
@@ -52,6 +52,11 @@ LinkedList::llist LinkedList::back(){
 	return first;
 }
 
+/**
+ * @brief Take the begin of the matrix and sends it to the end of itself.
+ * @details [long description]
+ */
+ 
 void LinkedList::recycle(){
 
 	ma_liste->next = first;

@@ -42,24 +42,8 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
     window_(Utility::hann_function) {
 
-        RGBQUAD c = {0,0,0,0};
-        for (int m = 0; m < width; ++m)
-        {
-            list.add(height);
-            for (int i = 0; i < height; ++i)
-            {
-                
-                list.front()->data[i] = c;
-            }
-        }
-    
-    /*list.add(height);
-    list.pop();*/
-
         
     spectroRefresh();
-
-
 
 
     if (!file_handle_){
@@ -115,10 +99,9 @@ void *ThreadTask(void *arg){
 void Spectrograph::spectroRefresh(void){
     pthread_t t;
 
-
     taskStruc *ts; // Struc which contains the pointer spectrograph and micinput
     ts->spectrum = this;
-    
+
     ts->mic = &micinput;
 
     pthread_create(&t,NULL,ThreadTask,(void*)ts);
@@ -157,17 +140,17 @@ void Spectrograph::read_in_data(){
         max_frequency_ = micinput.samplerate() * 0.5;
 
 
-        spectrogram_i = Spectrogram_i(width_);
+        RGBQUAD c = {0,0,0,0};
 
-        for (int i = 0; i < width_; ++i)
+        for (int m = 0; m < width_; ++m)
         {
-
-            for (int j = 0; j < height_; ++j)
+            list.add(height_);
+            for (int w = 0; w < height_; ++w)
             {
-                RGBQUAD c = {0,0,0,0};
-                spectrogram_i[i].push_back(c);
-            }   
+                list.front()->data[w] = c;
+            }
         }
+
 
     }
     else {
@@ -236,15 +219,13 @@ void Spectrograph::save_image(
     for (int x = 0; x < spectrogram_.size(); x++){
         int freq = 0;
 
-        spectrogram_i.pop_back();
-
-        spectrogram_i.push_front(std::vector<RGBQUAD>());
+        list.recycle();
 
         for (int y = 1; y <= height_;  y++){
 
             color = get_color(spectrogram_[x][freq/1.5], 15);
             
-            spectrogram_i.front().push_back(color);
+            list.front()->data[y-1] = color;
             
             if (log_mode){
                 freq = data_size_used - 1 - (int) (log_coef * log(height_ + 1 - y));
@@ -255,12 +236,17 @@ void Spectrograph::save_image(
         }
     }
 
-    for (int i = 0; i < spectrogram_i.size(); ++i)
+    LinkedList::Node *tmp = list.first;
+
+    for (int i = 0; i < width_; ++i)
     {
+
         for (int j = 0; j < height_; ++j)
         {
-            FreeImage_SetPixelColor(bitmap, i, j, &spectrogram_i[i][j]);
+            //FreeImage_SetPixelColor(bitmap, i, j, &spectrogram_i[i][j]);
+            FreeImage_SetPixelColor(bitmap, i, j, &tmp->data[j]);
         }
+         tmp = tmp->prev;
     }
     
     #ifdef FREEIMAGE_LIB

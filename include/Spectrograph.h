@@ -34,7 +34,7 @@
 #include "Utility.h"
 #include "FreeImage.h"
 #include "MicInput.h"
-#include "List.h"
+#include "LinkedList.h"
 
 
 class Spectrograph {
@@ -71,6 +71,7 @@ public:
     void read_in_data();
     void spectroRefresh(void);
     void sendToMicFlow(void);
+    LinkedList list;
 private:
     void _transform(std::vector<std::complex<double>>& signal, int min_size = -1);
     int get_number_of_chunks(const int CHUNK_SIZE, const int STEP);
@@ -101,7 +102,7 @@ private:
     std::function<double(int, int)> window_;
     std::map<float, std::complex<double>> omega_cache_;
 
-    List list;
+    
 };
 
 #endif /* SPECTROGRAPH_H_ */

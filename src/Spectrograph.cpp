@@ -21,9 +21,16 @@
 #include <chrono>
 #include <cmath>
 
-bool lol;
-int b;
-int num_chunks;
+    bool lol;
+    int b;
+    int num_chunks;
+
+    // Variable in save image
+    static RGBQUAD color;
+    static float ratio;
+    static int data_size_used;
+    static double log_coef;
+    static int data_size_image;
 
 
     typedef struct taskStruc {
@@ -35,8 +42,25 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
     window_(Utility::hann_function) {
 
-    list.push(height);
+        RGBQUAD c = {0,0,0,0};
+        for (int m = 0; m < width; ++m)
+        {
+            list.add(height);
+            for (int i = 0; i < height; ++i)
+            {
+                
+                list.front()->data[i] = c;
+            }
+        }
+    
+    /*list.add(height);
+    list.pop();*/
+
+        
     spectroRefresh();
+
+
+
 
     if (!file_handle_){
         std::cerr << "Error Loading file " << fname << std::endl;
@@ -70,11 +94,12 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
 void *ThreadTask(void *arg){
 
     taskStruc *tts = (taskStruc*) arg;
-
+    
     tts->spectrum->read_in_data();
 
     while(1){
 
+    
     tts->mic->FlowRefresh();
 
     tts->spectrum->sendToMicFlow();
@@ -90,8 +115,10 @@ void *ThreadTask(void *arg){
 void Spectrograph::spectroRefresh(void){
     pthread_t t;
 
+
     taskStruc *ts; // Struc which contains the pointer spectrograph and micinput
     ts->spectrum = this;
+    
     ts->mic = &micinput;
 
     pthread_create(&t,NULL,ThreadTask,(void*)ts);
@@ -129,10 +156,12 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = micinput.samplerate() * 0.5;
 
+
         spectrogram_i = Spectrogram_i(width_);
 
         for (int i = 0; i < width_; ++i)
         {
+
             for (int j = 0; j < height_; ++j)
             {
                 RGBQUAD c = {0,0,0,0};
@@ -188,21 +217,22 @@ void Spectrograph::save_image(
     #endif
     bitmap = FreeImage_Allocate(width_, height_, 32); // RGBA
     imageinit = true;
-    }
+    
 
-    const int data_size = spectrogram_.front().size();
+    data_size_image = spectrogram_.front().size();
     // Only the data below 1/2 of the sampling rate (nyquist frequency)
     // is useful
     float multiplier = 0.5;
     for (int i = 1; i < file_handle_.channels(); i++){
         multiplier *= 0.5;
     }
-    const int data_size_used = data_size * multiplier;
+    data_size_used = data_size_image * multiplier;
 
-    const double log_coef = 
-        (1.0/log(static_cast<double>(height_ + 1))) * static_cast<double>(data_size_used);
+    log_coef = 
+        (1.0/log( (double) (height_ + 1))) * (double)(data_size_used);
 
-    
+    }
+
     for (int x = 0; x < spectrogram_.size(); x++){
         int freq = 0;
 
@@ -212,15 +242,15 @@ void Spectrograph::save_image(
 
         for (int y = 1; y <= height_;  y++){
 
-            RGBQUAD color = get_color(spectrogram_[x][freq/1.5], 15);
+            color = get_color(spectrogram_[x][freq/1.5], 15);
             
             spectrogram_i.front().push_back(color);
             
             if (log_mode){
-                freq = data_size_used - 1 - static_cast<int>(log_coef * log(height_ + 1 - y));
+                freq = data_size_used - 1 - (int) (log_coef * log(height_ + 1 - y));
             } else {
-                float ratio = static_cast<float>(y)/height_;
-                freq = static_cast<int>(ratio * data_size_used);
+                ratio = (float) (y)/height_;
+                freq = (int) (ratio * data_size_used);
             }
         }
     }

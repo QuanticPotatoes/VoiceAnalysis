@@ -2,11 +2,15 @@
 #include "Window.h"
 
 
-int Window::width;
-int Window::height;
-char* Window::easel;
-bool r;
-int multiplier = 1;
+  int Window::width;
+  int Window::height;
+  char* Window::easel;
+  bool r;
+  int multiplier = 1;
+
+  static int x;
+  static int y;
+  static RGBQUAD color;
 
 Spectrograph* Window::spectrograph;
 
@@ -74,9 +78,9 @@ void Window::drawfunc() {
   r = false;
   }*/
 
- RGBQUAD color;
-  for(int x = 0; x < width; x++){
-  	for(int y = 0; y < height; y++){
+ 
+  for(x = 0; x < width; x++){
+  	for(y = 0; y < height; y++){
 
   		spectrograph->get_color_by_position(x,y,&color);
   		easel[3*(y*width+x) + 0] = color.rgbRed;

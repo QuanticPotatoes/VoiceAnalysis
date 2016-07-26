@@ -25,4 +25,6 @@ private:
 	void myglinit(void);
 	void spectrumInit(int *argc,char *argv[]);
 
+
+
 };

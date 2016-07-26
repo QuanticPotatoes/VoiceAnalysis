@@ -2,32 +2,38 @@
 #include <unistd.h>
 #include <iostream>
 
-class List
+class LinkedList
 {
 public:
-	List();
 
-	bool isLastNode ();
-	bool isFirstNode();
-
-	void front();
-	void back();
-
-	void push(int height);
-	void pop();
-
-private:
-	typedef struct Node
+ 	typedef struct Node
 	{
 		
 		struct Node* prev;
 		struct Node* next;
 
 		RGBQUAD *data;
+		int test;
 
 	} Node ;
 
 	typedef Node* llist;
+
+	LinkedList();
+
+	bool isLastNode ();
+	bool isFirstNode();
+
+	llist front();
+	llist back();
+
+	void add(int height);
+	void pop();
+	void recycle();
+
+
+
+private:
 
 	llist ma_liste = NULL;
 

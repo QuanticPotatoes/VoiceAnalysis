@@ -2,8 +2,6 @@
 #include "Spectrograph.h"
 #include <chrono>
 
-void *MicTask(void *arg);
-
 MicInput::MicInput(){
 
 	ss.format = PA_SAMPLE_S16NE;

@@ -32,9 +32,6 @@ Window::Window(int w,int h,Spectrograph *spectro,int *argc,char *argv[]){
 void Window::spectrumInit(int *argc,char *argv[]){
 	std::cout << "window init" << "\n";
 
-	  easel = new char[width*height*3];
-
-
 	  glutInitWindowSize(width,height);
 	  glutInit(argc, argv);
 	  glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -72,25 +69,9 @@ void Window::myglinit() {
 
 // main draw function, gets called over and over, as fast as possible
 void Window::drawfunc() {
-
-  /*if(r){
-  spectrograph->spectroRefresh();
-  r = false;
-  }*/
-
- 
-  for(x = 0; x < width; x++){
-  	for(y = 0; y < height; y++){
-
-  		spectrograph->get_color_by_position(x,y,&color);
-  		easel[3*(y*width+x) + 0] = color.rgbRed;
-  		easel[3*(y*width+x) + 1] = color.rgbGreen;
-  		easel[3*(y*width+x) + 2] = color.rgbBlue;
-  	}
-  }
-
+  
   // drawpixels draws the rgb data stored in 'easel' to the screen
-  glDrawPixels(width,height, GL_RGB, GL_UNSIGNED_BYTE, easel);
+  glDrawPixels(width,height, GL_RGB, GL_UNSIGNED_BYTE, spectrograph->PixelArray);
 
 
   // in double buffer mode so we swap to avoid a flicker

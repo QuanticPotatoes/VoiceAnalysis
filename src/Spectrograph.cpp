@@ -32,6 +32,10 @@
     static int data_size_used;
     static double log_coef;
     static int data_size_image;
+    static LinkedList::Node *tmp;
+    // Variable in compute
+    static int STEP;
+    static int new_size;
 
 
     typedef struct taskStruc {
@@ -91,7 +95,7 @@ void *ThreadTask(void *arg){
 
     tts->spectrum->compute(4096, 0.99);
 
-    tts->spectrum->save_image("spectrogram.png", true);
+    tts->spectrum->save_image("spectrogram.png", false);
 
     usleep(10000);
     }
@@ -140,6 +144,7 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = micinput.samplerate() * 0.5;
 
+        PixelArray = (char*) malloc(sizeof(char) * height_* width_ *3);
 
         RGBQUAD c = {0,0,0,0};
 
@@ -194,14 +199,8 @@ void Spectrograph::save_image(
         bool log_mode){
 
     if(!imageinit){
-    //
-    // Active for static linking
-    #ifdef FREEIMAGE_LIB
-        FreeImage_Initialise();
-    #endif
-    bitmap = FreeImage_Allocate(width_, height_, 32); // RGBA
+
     imageinit = true;
-    
 
     data_size_image = spectrogram_.front().size();
     // Only the data below 1/2 of the sampling rate (nyquist frequency)
@@ -224,7 +223,7 @@ void Spectrograph::save_image(
 
         for (int y = 1; y <= height_;  y++){
 
-            color = get_color(spectrogram_[x][freq/1.5], 15);
+            color = get_color(spectrogram_[x][freq], 15);
             
             list.front()->data[y-1] = color;
             
@@ -237,22 +236,20 @@ void Spectrograph::save_image(
         }
     }
 
-    LinkedList::Node *tmp = list.first;
+    tmp = list.first;
 
     for (int i = 0; i < width_; ++i)
     {
 
         for (int j = 0; j < height_; ++j)
         {
-            //FreeImage_SetPixelColor(bitmap, i, j, &spectrogram_i[i][j]);
-            FreeImage_SetPixelColor(bitmap, i, j, &tmp->data[j]);
+
+            PixelArray[3*(i + j*width_) + 0] = tmp->data[j].rgbRed;
+            PixelArray[3*(i + j*width_) + 1] = tmp->data[j].rgbGreen;
+            PixelArray[3*(i + j*width_) + 2] = tmp->data[j].rgbBlue;
         }
          tmp = tmp->prev;
     }
-    
-    #ifdef FREEIMAGE_LIB
-        FreeImage_Deinitialise();
-    #endif
 }
 
 void Spectrograph::get_color_by_position(int x, int y, RGBQUAD *color){
@@ -260,6 +257,8 @@ void Spectrograph::get_color_by_position(int x, int y, RGBQUAD *color){
     FreeImage_GetPixelColor(bitmap,x,y,color);
 
 }
+
+
 
 RGBQUAD Spectrograph::get_color(std::complex<double>& c, float threshold){
     double value = 0.5 * std::log10(Utility::mag(c) + 1);
@@ -272,10 +271,10 @@ RGBQUAD Spectrograph::get_color(std::complex<double>& c, float threshold){
 
 void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
     assert(0.0 <= OVERLAP && OVERLAP < 1.0);
-    const int STEP = static_cast<int>(CHUNK_SIZE * (1.0 - OVERLAP));
+    STEP = (int) (CHUNK_SIZE * (1.0 - OVERLAP));
 
     // Pad the data
-    int new_size = 0;
+    new_size = 0;
     while (new_size + CHUNK_SIZE < data_.size()){
         new_size += STEP;
     }

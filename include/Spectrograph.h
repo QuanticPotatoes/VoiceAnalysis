@@ -45,6 +45,7 @@ public:
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
 
     FIBITMAP *bitmap;
+    char *PixelArray;
     MicInput micinput;
 
     int width();

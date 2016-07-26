@@ -19,37 +19,43 @@
 #include "ColorGradient.h"
 #include <cassert>
 
+static float ratio_g;
+static RGBA_Color first;
+static RGBA_Color second;
+static RGBA_Color color;
+static float width;
+static float val;
+
 RGBA_Color ColorGradient::get_color(float value){
-    assert(colors_.size() > 1);
+    //assert(colors_.size() > 1);
 
     if (value >= max_){
         return colors_.back();
     }
-    float ratio = value/max_;
-    float width = 1.0/static_cast<float>(colors_.size() - 1);
+    ratio_g = value/max_;
+    width = 1.0/((float)colors_.size() - 1);
     int i = 0;
 
     // Find the "bin"
-    while (ratio > width){
-        ratio -= width;
+    while (ratio_g > width){
+        ratio_g -= width;
         i++;
     }
 
-    ratio *= colors_.size() - 1;
+    ratio_g *= colors_.size() - 1;
 
-    assert(0.0 <= ratio);
-    assert(ratio <= 1.0);
+    /*assert(0.0 <= ratio_g);
+    assert(ratio_g <= 1.0);
     assert(0 <= i);
-    assert(i < colors_.size());
+    assert(i < colors_.size());*/
 
-    RGBA_Color first = colors_[i];
-    RGBA_Color second = colors_[i + 1];
+    first = colors_[i];
+    second = colors_[i + 1];
 
-    RGBA_Color color;
     color.a = 255;
-    color.r = interpolate(first.r, second.r, ratio);
-    color.g = interpolate(first.g, second.g, ratio);
-    color.b = interpolate(first.b, second.b, ratio);
+    color.r = interpolate(first.r, second.r, ratio_g);
+    color.g = interpolate(first.g, second.g, ratio_g);
+    color.b = interpolate(first.b, second.b, ratio_g);
 
     return color;
 }
@@ -59,7 +65,7 @@ void ColorGradient::add_color(RGBA_Color color){
 }
 
 int ColorGradient::interpolate(int start, int finish, float ratio){
-    float val = static_cast<float>(finish - start) * ratio + static_cast<float>(start);
+    val = ((float)finish - start) * ratio + ((float) start);
 
-    return static_cast<int>(val);
+    return (int)(val);
 }

@@ -1,5 +1,6 @@
 /*
- * Copyright (C) Christian Briones, 2013
+ * Voice Analysis 
+ * Copyright (C) Jérémy DIEUZE, 2016
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +22,6 @@
 #include <string>
 #include <sndfile.hh>
 #include <vector>
-#include <deque>
 #include <complex>
 #include <functional>
 
@@ -43,7 +43,6 @@ public:
     
     typedef std::function<double(int, int)> Window_t;
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
-    typedef std::deque< std::vector<RGBQUAD> > Spectrogram_i;
 
     FIBITMAP *bitmap;
     MicInput micinput;

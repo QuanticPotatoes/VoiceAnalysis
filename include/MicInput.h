@@ -2,6 +2,7 @@
 #define MICINPUT_H
 #include <iostream>
 #include <deque>
+#include <mutex>
 #include <vector>
 #include <time.h>
 #include <cmath>
@@ -10,6 +11,7 @@
 #include <pthread.h>
 #include "pulse/simple.h"
 #include "pulse/error.h"
+#include "LinkedList.h"
 
 #define BUFSIZE 2048
 
@@ -28,7 +30,11 @@ public:
 
 
 private:
+
+	std::mutex m;
+	
 	std::deque<short> micFlow;
+	LinkedList<short> flowMic;
 	pa_simple *paconn;
 	pa_sample_spec ss;
 	short buf[BUFSIZE];

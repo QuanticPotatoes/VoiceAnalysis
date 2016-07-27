@@ -21,6 +21,7 @@
 
 #include <string>
 #include <sndfile.hh>
+#include <cstring>
 #include <vector>
 #include <complex>
 #include <functional>
@@ -70,14 +71,12 @@ public:
     void read_in_data();
     void spectroRefresh(void);
     void sendToMicFlow(void);
-    LinkedList list;
+    LinkedList<RGBQUAD> list;
 private:
     void _transform(std::vector<std::complex<double>>& signal, int min_size = -1);
     int get_number_of_chunks(const int CHUNK_SIZE, const int STEP);
     void chunkify(const int CHUNK_SIZE, const int STEP);
-    void read_in_spectrum(void);
 
-    
     RGBQUAD get_color(std::complex<double>& c, float threshold);
     std::complex<double> omega(float p, float q);
     

@@ -2,6 +2,8 @@
 #include "Spectrograph.h"
 #include <chrono>
 
+static LinkedList<short>::Node *tmp;
+
 MicInput::MicInput(){
 
 	ss.format = PA_SAMPLE_S16NE;
@@ -25,6 +27,7 @@ MicInput::MicInput(){
 
 		for (int i = 0; i < BUFSIZE; ++i)
 	{
+		flowMic.push(1)->data[0] = 0;
 		micFlow.push_front(1000*sin(i));
 	}
 }
@@ -43,20 +46,41 @@ int MicInput::samplerate(void){
 	}
 
 void MicInput::readMicFlow(std::vector<short> *ptr){
-		for(int i = 0; i < micFlow.size(); i++){
 
 
-		(*ptr)[i] = micFlow[i];
+		m.lock();
+		tmp = flowMic.front();
+
+		for(int i = 0; i < BUFSIZE; i++){
+
+
+		//(*ptr)[i] = micFlow[i];
+		(*ptr)[i] = tmp->data[0];
+	
+		//std::cout << "\033[H\033[J" << ( micFlow[i] && tmp->data[0] ) << std::endl;
+
+		tmp = tmp->prev;
 	}
+		
+	m.unlock();
 }
 
 void MicInput::FlowRefresh(void){
 
+	
 	pa_simple_read(paconn,buf,sizeof(buf),&error);
+
+	m.lock();
 	for(short i : buf){
 
-		micFlow.pop_back(); //remove useless sound in back
-		micFlow.push_front(i*2); // Add microphone sound in front
+		
+		flowMic.recycle(); //recycle useless sound in back
+		flowMic.front()->data[0] = i*2; // Add microphone sound in front
+		
+		//micFlow.pop_back(); 
+		//micFlow.push_front(i*2); 
 	}
+	m.unlock();
+	
 
 }

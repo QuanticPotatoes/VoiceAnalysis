@@ -1,11 +1,13 @@
-#include "LinkedList.h"
+/*#include "LinkedList.h"
 
-LinkedList::LinkedList(){
+template<class T>
+LinkedList<T>::LinkedList(){
 	//push();
 	std::cout << "liste créée" << std::endl;
 }
 
-void LinkedList::add(int height){
+template<class T>
+void LinkedList<T>::add(int height){
 	Node *newNode = (Node*) malloc(sizeof(Node) );
 	if(!newNode){
 		exit(EXIT_FAILURE);
@@ -14,8 +16,6 @@ void LinkedList::add(int height){
 	newNode->data = (RGBQUAD*) malloc(sizeof(RGBQUAD)*height);
 	newNode->prev = ma_liste;
 	
-	newNode->test = 0;
-
 	if(ma_liste != NULL){ 
 		
 		if(ma_liste->prev == NULL){
@@ -36,28 +36,32 @@ void LinkedList::add(int height){
 	ma_liste = newNode;
 }
 
-void LinkedList::pop(){
+template<class T>
+void LinkedList<T>::pop(){
 
 	Node *tmp = first->next;
 	delete(first);
 	first = tmp;
-	std::cout << first->test << std::endl;
+
 }
 
-LinkedList::llist LinkedList::front(){
+template<class T>
+typename LinkedList<T>::llist LinkedList<T>::front(){
 	return ma_liste;
 }
 
-LinkedList::llist LinkedList::back(){
+template<class T>
+typename LinkedList<T>::llist LinkedList<T>::back(){
 	return first;
 }
 
 /**
  * @brief Take the begin of the matrix and sends it to the end of itself.
  * @details [long description]
- */
  
-void LinkedList::recycle(){
+ 
+template<class T>
+void LinkedList<T>::recycle(){
 
 	ma_liste->next = first;
 	first = first->next;
@@ -66,3 +70,4 @@ void LinkedList::recycle(){
 	ma_liste->next->prev = ma_liste;
 	ma_liste = ma_liste->next;
 }
+ */

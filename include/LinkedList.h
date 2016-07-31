@@ -1,7 +1,6 @@
 #ifndef __X_H_INCLUDED__
 #define __X_H_INCLUDED__   
 
-#include <FreeImage.h>
 #include <unistd.h>
 #include <iostream>
 
@@ -25,8 +24,6 @@ public:
 	typedef Node* llist;
 
 	LinkedList(){
-		std::cout << "liste créée" << std::endl;
-
 	}
 
 	bool isLastNode ();

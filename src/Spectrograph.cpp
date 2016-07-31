@@ -33,11 +33,12 @@
     static double log_coef;
     static int data_size_image;
     static int freq;
-    static int x,y;
+    static int x,y,w;
     static LinkedList<RGBQUAD>::Node *tmp;
     // Variable in compute
     static int STEP;
     static int new_size;
+    static unsigned char number_of_core;
 
 
     typedef struct taskStruc {
@@ -47,11 +48,12 @@
 
 Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
-    window_(Utility::hann_function) {
+    window_(Utility::blackman_harris) {
 
-        
+   
     spectroRefresh();
 
+        //std::cout <<  << std::endl;
 
     if (!file_handle_){
         std::cerr << "Error Loading file " << fname << std::endl;
@@ -84,6 +86,16 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
 
 void *ThreadTask(void *arg){
 
+    //Get the number of the core
+    cpu_set_t cpuset;
+    number_of_core = sysconf(_SC_NPROCESSORS_ONLN);
+
+    std::cout << "Number of cores used : " << sysconf(_SC_NPROCESSORS_ONLN) << std::endl;
+    CPU_ZERO(&cpuset);
+    CPU_SET(number_of_core,&cpuset);
+
+    sched_setaffinity(0, sizeof(cpuset), &cpuset);
+
     taskStruc *tts = (taskStruc*) arg;
     
     tts->spectrum->read_in_data();
@@ -95,9 +107,9 @@ void *ThreadTask(void *arg){
 
     tts->spectrum->sendToMicFlow();
 
-    tts->spectrum->compute(4096, 0.99);
+    tts->spectrum->compute(1024, 0.99);
 
-    tts->spectrum->save_image("spectrogram.png", false);
+    tts->spectrum->save_image("spectrogram.png", true);
 
     usleep(10000);
     }
@@ -146,8 +158,9 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = micinput.samplerate() * 0.5;
 
-        PixelArray = (char*) malloc(sizeof(char) * height_* width_ *3);
+        PixelArray = (char*) malloc(sizeof(char*) * height_* width_ *3);
 
+        // Remplis la liste chaine de 0
         for (int m = 0; m < width_; ++m)
         {
             list.push(height_);
@@ -216,24 +229,27 @@ void Spectrograph::save_image(
     for (x = 0; x < spectrogram_.size(); x++){
         freq = 0;
 
+        for(w = 0; w < 9; w++){
         list.recycle();
 
-        for (y = 1; y <= height_;  y++){
+            for (y = 1; y <= height_;  y++){
 
-            color = get_color(spectrogram_[x][freq], 15);
-            
-            list.front()->data[y-1] = color;
-            
-            if (log_mode){
-                freq = data_size_used - 1 - (int) (log_coef * log(height_ + 1 - y));
-            } else {
-                ratio = (float) (y)/height_;
-                freq = (int) (ratio * data_size_used);
+                color = get_color(spectrogram_[x][freq], 15);
+                
+                list.front()->data[y-1] = color;
+                
+                if (log_mode){
+                    freq = data_size_used - 1 - (int) (log_coef * log(height_ + 1 - y));
+                } else {
+                    ratio = (float) (y)/height_;
+                    freq = (int) (ratio * data_size_used);
+                }
             }
-        }
+       }
     }
 
     tmp = list.first;
+
 
     for (x = 0; x < width_; ++x)
     {
@@ -266,7 +282,8 @@ RGBQUAD Spectrograph::get_color(std::complex<double>& c, float threshold){
 
 void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
     assert(0.0 <= OVERLAP && OVERLAP < 1.0);
-    STEP = (int) (CHUNK_SIZE * (1.0 - OVERLAP));
+    //STEP = (int) (CHUNK_SIZE * (1.0 - OVERLAP));
+    STEP = 10;
 
     // Pad the data
     new_size = 0;
@@ -299,8 +316,9 @@ void Spectrograph::chunkify(const int CHUNK_SIZE, const int STEP){
     
     spectrogram_.clear();
 
-    // spectrogram_.reserve((data_.size() - CHUNK_SIZE)/STEP + 1);
-    spectrogram_.reserve(2);
+    spectrogram_.reserve((data_.size() - CHUNK_SIZE)/STEP + 1);
+    //std::cout << (data_.size() - CHUNK_SIZE)/STEP + 1 << std::endl;
+    //spectrogram_.reserve(2);
 
     //std::cout << "Computing chunks." << std::endl;
     num_chunks = get_number_of_chunks(CHUNK_SIZE, STEP);
@@ -359,7 +377,7 @@ void Spectrograph::transform(std::vector<std::complex<double>>& signal, int min_
         n *= 2;
     }
     signal.assign(transformed.begin(), transformed.end());
-}
+} 
 
 
 void Spectrograph::transform_recursive(

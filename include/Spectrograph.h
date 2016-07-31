@@ -26,6 +26,10 @@
 #include <complex>
 #include <functional>
 
+#include <sched.h>   //cpu_set_t , CPU_SET
+#include <pthread.h> //pthread_t
+#include <unistd.h>
+
 #include <map>
 
 #include <pthread.h>

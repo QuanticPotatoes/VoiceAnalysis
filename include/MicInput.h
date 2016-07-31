@@ -28,12 +28,12 @@ public:
 	int channels(void);
 	int samplerate(void);
 
+	int buffer_s = BUFSIZE;
 
 private:
 
 	std::mutex m;
 	
-	std::deque<short> micFlow;
 	LinkedList<short> flowMic;
 	pa_simple *paconn;
 	pa_sample_spec ss;

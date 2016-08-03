@@ -51,6 +51,7 @@ public:
 
     FIBITMAP *bitmap;
     char *PixelArray;
+    char *VoiceArray;
     MicInput micinput;
 
     int width();

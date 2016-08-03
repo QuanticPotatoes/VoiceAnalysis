@@ -8,7 +8,7 @@ MicInput::MicInput(){
 
 	ss.format = PA_SAMPLE_S16NE;
 	ss.channels = 1;
-	//ss.rate = 44100;$
+	//ss.rate = 44100;
 	//ss.rate = 22050;
 	ss.rate = 16961;
 

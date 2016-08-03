@@ -22,7 +22,8 @@
 #include <chrono>
 #include <cmath>
 
-    bool lol;
+    static bool detect;
+    static int x_detect,x_image;
     int b;
     int num_chunks;
 
@@ -33,8 +34,12 @@
     static double log_coef;
     static int data_size_image;
     static int freq;
-    static int x,y,w;
+    static int x,y,w,z;
+    static int number_voice; // Number of voice frames detected
+    static const short w_max = 1;
+    static bool VoiceContinuous;
     static LinkedList<RGBQUAD>::Node *tmp;
+    static LinkedList<RGBQUAD> VoiceList;
     // Variable in compute
     static int STEP;
     static int new_size;
@@ -158,7 +163,8 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = micinput.samplerate() * 0.5;
 
-        PixelArray = (char*) malloc(sizeof(char*) * height_* width_ *3);
+        PixelArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
+        VoiceArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
 
         // Remplis la liste chaine de 0
         for (int m = 0; m < width_; ++m)
@@ -208,6 +214,8 @@ void Spectrograph::save_image(
         std::string fname, 
         bool log_mode){
 
+    detect = false;
+   
     if(!imageinit){
 
     
@@ -229,15 +237,30 @@ void Spectrograph::save_image(
     for (x = 0; x < spectrogram_.size(); x++){
         freq = 0;
 
-        for(w = 0; w < 9; w++){
+        for(w = 0; w < w_max+1; w++){
         list.recycle();
+
+        if(list.front()->v){
+           list.front()->v = false;
+           number_voice--; 
+        }
+        
 
             for (y = 1; y <= height_;  y++){
 
                 color = get_color(spectrogram_[x][freq], 15);
                 
+
                 list.front()->data[y-1] = color;
                 
+                if(((int) color.rgbGreen) > 92 && ((int) color.rgbBlue) > 200 && !detect ){
+                    
+                    list.front()->data[y-1] = {255,255,255,0};
+                    detect = true;
+                    number_voice++;
+                    list.front()->v = true;
+                }
+
                 if (log_mode){
                     freq = data_size_used - 1 - (int) (log_coef * log(height_ + 1 - y));
                 } else {
@@ -246,6 +269,7 @@ void Spectrograph::save_image(
                 }
             }
        }
+
     }
 
     tmp = list.first;
@@ -253,14 +277,58 @@ void Spectrograph::save_image(
 
     for (x = 0; x < width_; ++x)
     {
+
         for (y = 0; y < height_; ++y)
         {
+            
+            
             PixelArray[3*(x + y*width_) + 0] = tmp->data[y].rgbRed;
             PixelArray[3*(x + y*width_) + 1] = tmp->data[y].rgbGreen;
-            PixelArray[3*(x + y*width_) + 2] = tmp->data[y].rgbBlue;
+            PixelArray[3*(x + y*width_) + 2] = tmp->data[y].rgbBlue;          
+            
+
         }
+
          tmp = tmp->prev;
     }
+
+
+    if(number_voice > 0)
+    {
+
+        tmp = list.front();
+        
+       // memset(VoiceArray,0,sizeof(char*) * height_ * width_ * 3);
+
+        z = 0;
+
+         for (x = 0; x < width_; ++x)
+            {
+
+        if(tmp->v)
+        {
+
+        for(w = 0; w < width_ /  number_voice ; w++){
+
+            for (y = 0; y < height_; ++y)
+                {
+                    VoiceArray[3*(z + y*width_) + 0] = tmp->data[y].rgbRed;
+                    VoiceArray[3*(z + y*width_) + 1] = tmp->data[y].rgbGreen;
+                    VoiceArray[3*(z + y*width_) + 2] = tmp->data[y].rgbBlue;
+                }
+
+            z++;
+
+          }
+
+        }
+
+            tmp = tmp->prev;
+        }
+
+    }
+
+     
 }
 
 void Spectrograph::get_color_by_position(int x, int y, RGBQUAD *color){

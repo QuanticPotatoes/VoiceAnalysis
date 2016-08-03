@@ -48,6 +48,12 @@ void Window::spectrumInit(int *argc,char *argv[]){
 
 	  glutDisplayFunc(drawfunc);
 
+    glutInitWindowSize(width,height);
+    glutCreateWindow("Voice");
+
+    glutInitWindowPosition (500, 500);
+    glutDisplayFunc(extractSound);
+
 	 glutMainLoop();
 }
 
@@ -82,4 +88,18 @@ void Window::drawfunc() {
  
   usleep(40000);
   
+}
+
+void Window::extractSound() {
+
+  glDrawPixels(width,height, GL_RGB, GL_UNSIGNED_BYTE, spectrograph->VoiceArray);
+
+
+  // in double buffer mode so we swap to avoid a flicker
+  glutSwapBuffers();
+
+  // instruct event system to call 'drawfunc' again
+  glutPostRedisplay();
+ 
+  usleep(40000);
 }

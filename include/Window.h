@@ -14,6 +14,7 @@ public:
 	void set_window();
 	void draw_graph();
 	static void drawfunc(void);
+	static void extractSound(void);
     static int width,height;
 	static char *easel;
 	static Spectrograph *spectrograph;

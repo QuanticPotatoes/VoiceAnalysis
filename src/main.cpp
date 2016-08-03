@@ -25,7 +25,7 @@
 
 int main(int argc, char *argv[])
 { 
-    int w = 380, h = 520;
+    int w = 60, h = 520;
     //int w = 60, h = 250;
     RGBQUAD color;
     std::string fname = "--live";
@@ -48,6 +48,5 @@ int main(int argc, char *argv[])
     }
 
     Window window(w,h,&spectrograph,&argc,argv);
-
     return 0;
 }

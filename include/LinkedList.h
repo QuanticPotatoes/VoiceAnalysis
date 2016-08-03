@@ -19,6 +19,8 @@ public:
 
 		T* data;
 
+		bool v;
+
 	} Node ;
 
 	typedef Node* llist;

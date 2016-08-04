@@ -40,6 +40,7 @@
     static bool VoiceContinuous;
     static LinkedList<RGBQUAD>::Node *tmp;
     static LinkedList<RGBQUAD> VoiceList;
+    static float chunk_width_ratio;
     // Variable in compute
     static int STEP;
     static int new_size;
@@ -55,18 +56,9 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
     window_(Utility::blackman_harris) {
 
-   
     spectroRefresh();
 
-        //std::cout <<  << std::endl;
-
-    if (!file_handle_){
-        std::cerr << "Error Loading file " << fname << std::endl;
-    } else {
-       // read_in_data();
-    }    
-
-    // Color for our plot
+        // Color for our plot
     // Black
     gradient_.add_color({  0,   0,   0,   0});
     // Purple
@@ -84,6 +76,17 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     gradient_.add_color({230, 160,   0,   0});
     // Red
     gradient_.add_color({255,   0,   0,   0});
+
+
+    if (!file_handle_){
+        std::cerr << "Error Loading file " << fname << std::endl;
+    } else {
+      if(fname_ != "--live"){
+      read_in_data();
+        }
+    }    
+
+
 
 
 }
@@ -121,6 +124,8 @@ void *ThreadTask(void *arg){
 }
 
 void Spectrograph::spectroRefresh(void){
+
+    if(fname_ == "--live"){
     pthread_t t;
 
     taskStruc *ts; // Struc which contains the pointer spectrograph and micinput
@@ -131,6 +136,8 @@ void Spectrograph::spectroRefresh(void){
     pthread_create(&t,NULL,ThreadTask,(void*)ts);
 
     pthread_detach(t);
+
+    }
     
 }
 
@@ -150,6 +157,16 @@ void Spectrograph::sendToMicFlow(){
 
 void Spectrograph::read_in_data(){
 
+        PixelArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
+        VoiceArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
+
+        // Remplis la liste chaine de 0
+        std::cout << width_ << std::endl;
+        for (int m = 0; m < width_; ++m)
+        {
+            list.push(height_);
+            memset(list.front()->data,0,sizeof(list.front()->data));
+        }
 
     if(fname_ == "--live"){
 
@@ -162,17 +179,6 @@ void Spectrograph::read_in_data(){
         micinput.readMicFlow(&data_);
 
         max_frequency_ = micinput.samplerate() * 0.5;
-
-        PixelArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
-        VoiceArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
-
-        // Remplis la liste chaine de 0
-        for (int m = 0; m < width_; ++m)
-        {
-            list.push(height_);
-            memset(list.front()->data,0,sizeof(list.front()->data));
-        }
-
 
     }
     else {
@@ -190,7 +196,12 @@ void Spectrograph::read_in_data(){
 
         max_frequency_ = file_handle_.samplerate() * 0.5;
 
+        compute(1024,0.99);
+        save_image("coucou.png",true);
+
     }
+
+
 
 }
 
@@ -214,7 +225,7 @@ void Spectrograph::save_image(
         std::string fname, 
         bool log_mode){
 
-    detect = false;
+    
    
     if(!imageinit){
 
@@ -236,14 +247,17 @@ void Spectrograph::save_image(
 
     for (x = 0; x < spectrogram_.size(); x++){
         freq = 0;
+        detect = false;
 
-        for(w = 0; w < w_max+1; w++){
-        list.recycle();
-
-        if(list.front()->v){
-           list.front()->v = false;
+        if(list.first->v){
+           list.first->v = false;
            number_voice--; 
         }
+
+        list.recycle();
+
+        //for(w = 0; w < w_max+1; w++){
+        
         
 
             for (y = 1; y <= height_;  y++){
@@ -256,8 +270,10 @@ void Spectrograph::save_image(
                 if(((int) color.rgbGreen) > 92 && ((int) color.rgbBlue) > 200 && !detect ){
                     
                     list.front()->data[y-1] = {255,255,255,0};
+
                     detect = true;
                     number_voice++;
+
                     list.front()->v = true;
                 }
 
@@ -268,7 +284,7 @@ void Spectrograph::save_image(
                     freq = (int) (ratio * data_size_used);
                 }
             }
-       }
+       //}
 
     }
 
@@ -297,9 +313,9 @@ void Spectrograph::save_image(
     {
 
         tmp = list.front();
-        
-       // memset(VoiceArray,0,sizeof(char*) * height_ * width_ * 3);
 
+        memset(VoiceArray,0,sizeof(char*) * height_ * width_ * 3);
+         //std::cout << width_ << " / "<< number_voice << " = " << (float) width_ /  (float) number_voice << std::endl;
         z = 0;
 
          for (x = 0; x < width_; ++x)
@@ -308,7 +324,7 @@ void Spectrograph::save_image(
         if(tmp->v)
         {
 
-        for(w = 0; w < width_ /  number_voice ; w++){
+        for(w = 0; w < (float) width_ / (float) number_voice; w++){
 
             for (y = 0; y < height_; ++y)
                 {
@@ -350,8 +366,9 @@ RGBQUAD Spectrograph::get_color(std::complex<double>& c, float threshold){
 
 void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
     assert(0.0 <= OVERLAP && OVERLAP < 1.0);
-    //STEP = (int) (CHUNK_SIZE * (1.0 - OVERLAP));
-    STEP = 10;
+    STEP = (int) (CHUNK_SIZE * (1.0 - OVERLAP));
+
+    //STEP = 10;
 
     // Pad the data
     new_size = 0;
@@ -384,7 +401,7 @@ void Spectrograph::chunkify(const int CHUNK_SIZE, const int STEP){
     
     spectrogram_.clear();
 
-    spectrogram_.reserve((data_.size() - CHUNK_SIZE)/STEP + 1);
+    
     //std::cout << (data_.size() - CHUNK_SIZE)/STEP + 1 << std::endl;
     //spectrogram_.reserve(2);
 
@@ -392,7 +409,17 @@ void Spectrograph::chunkify(const int CHUNK_SIZE, const int STEP){
     num_chunks = get_number_of_chunks(CHUNK_SIZE, STEP);
     //std::cout << "Number of Chunks: " << num_chunks << std::endl;
 
-    float chunk_width_ratio = (float)(num_chunks)/2;
+    if(fname_ != "--live"){
+
+        spectrogram_.reserve(width_);
+        chunk_width_ratio = (float)(num_chunks)/width_;
+    }
+    else
+    {
+        spectrogram_.reserve(2);
+        chunk_width_ratio = (float)(num_chunks)/2;
+    }
+    
 
     int j = 0;
     float float_j = 0.0;

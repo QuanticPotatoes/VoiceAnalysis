@@ -10,7 +10,7 @@ MicInput::MicInput(){
 	ss.channels = 1;
 	//ss.rate = 44100;
 	//ss.rate = 22050;
-	ss.rate = 16961;
+	ss.rate = 16000;
 
 	if(!(paconn = pa_simple_new(NULL,
 						"micrecord",
@@ -75,8 +75,6 @@ void MicInput::FlowRefresh(void){
 		flowMic.recycle(); //recycle useless sound in back
 		flowMic.front()->data[0] = i*3; // Add microphone sound in front
 
-		//micFlow.pop_back(); 
-		//micFlow.push_front(i*2); 
 	}
 	
 	

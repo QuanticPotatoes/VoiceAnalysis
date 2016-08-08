@@ -17,6 +17,8 @@
  */
 
 #include "Spectrograph.h"
+#include "fann.h"
+#include "fann_cpp.h"
 #include <iostream>
 #include <cassert>
 #include <chrono>
@@ -161,7 +163,6 @@ void Spectrograph::read_in_data(){
         VoiceArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
 
         // Remplis la liste chaine de 0
-        std::cout << width_ << std::endl;
         for (int m = 0; m < width_; ++m)
         {
             list.push(height_);
@@ -315,7 +316,6 @@ void Spectrograph::save_image(
         tmp = list.front();
 
         memset(VoiceArray,0,sizeof(char*) * height_ * width_ * 3);
-         //std::cout << width_ << " / "<< number_voice << " = " << (float) width_ /  (float) number_voice << std::endl;
         z = 0;
 
          for (x = 0; x < width_; ++x)
@@ -368,8 +368,6 @@ void Spectrograph::compute(const int CHUNK_SIZE, const float OVERLAP){
     assert(0.0 <= OVERLAP && OVERLAP < 1.0);
     STEP = (int) (CHUNK_SIZE * (1.0 - OVERLAP));
 
-    //STEP = 10;
-
     // Pad the data
     new_size = 0;
     while (new_size + CHUNK_SIZE < data_.size()){
@@ -401,13 +399,7 @@ void Spectrograph::chunkify(const int CHUNK_SIZE, const int STEP){
     
     spectrogram_.clear();
 
-    
-    //std::cout << (data_.size() - CHUNK_SIZE)/STEP + 1 << std::endl;
-    //spectrogram_.reserve(2);
-
-    //std::cout << "Computing chunks." << std::endl;
     num_chunks = get_number_of_chunks(CHUNK_SIZE, STEP);
-    //std::cout << "Number of Chunks: " << num_chunks << std::endl;
 
     if(fname_ != "--live"){
 
@@ -535,3 +527,5 @@ int Spectrograph::pad_to_power2(std::vector<std::complex<double>>& signal, int m
     pad(signal, new_size);
     return power;
 }
+
+

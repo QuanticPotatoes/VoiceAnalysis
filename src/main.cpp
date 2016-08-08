@@ -19,6 +19,7 @@
 #include "Spectrograph.h"
 #include "Utility.h"
 #include "Window.h"
+#include "Train.h"
 
 #include <iostream>
 #include <string>
@@ -35,17 +36,21 @@ int main(int argc, char *argv[])
         argv[1] = (char*) "--live";
     }
     else{
-
         fname = argv[1]; 
     }
-
-
 
     Spectrograph spectrograph(fname,w,h);
 
     if (!spectrograph.file_is_valid() && !(argv[1] == "--live")){
         return -1;
     }
+
+    Train trainingFile;
+    trainingFile.createFileTraining("voice");
+    //trainingFile.initNeuralFile(1500,36);
+    char lol[5] = {1,1,1,1,1};
+    char v[5] = {2,3,5,6,6};
+    trainingFile.addDataTrainingToFile();
 
     Window window(w,h,&spectrograph,&argc,argv);
     return 0;

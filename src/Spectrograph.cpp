@@ -19,6 +19,7 @@
 #include "Spectrograph.h"
 #include "fann.h"
 #include "fann_cpp.h"
+#include "Train.h"
 #include <iostream>
 #include <cassert>
 #include <chrono>
@@ -28,7 +29,7 @@
     static int x_detect,x_image;
     int b;
     int num_chunks;
-
+    static Train TrainingFile;
     // Variable in save image
     static RGBQUAD color;
     static float ratio;
@@ -59,6 +60,8 @@ Spectrograph::Spectrograph(std::string fname, int width, int height) :
     window_(Utility::blackman_harris) {
 
     spectroRefresh();
+
+    TrainingFile.createFileTraining("voice");
 
         // Color for our plot
     // Black
@@ -159,8 +162,8 @@ void Spectrograph::sendToMicFlow(){
 
 void Spectrograph::read_in_data(){
 
-        PixelArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
-        VoiceArray = (char*) malloc(sizeof(char*) * height_ * width_ * 3);
+        PixelArray = (unsigned char*) malloc(sizeof(unsigned char*) * height_ * width_ * 3);
+        VoiceArray = (unsigned char*) malloc(sizeof(unsigned char*) * height_ * width_ * 3);
 
         // Remplis la liste chaine de 0
         for (int m = 0; m < width_; ++m)
@@ -342,6 +345,9 @@ void Spectrograph::save_image(
             tmp = tmp->prev;
         }
 
+        unsigned char lol[] = {'1','1','4'};
+        std::cout << *VoiceArray ;
+        TrainingFile.addDataTrainingToFile(VoiceArray, height_ * width_ * 3);
     }
 
      

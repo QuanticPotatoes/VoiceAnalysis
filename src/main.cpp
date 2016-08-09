@@ -45,12 +45,12 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    Train trainingFile;
+    /*Train trainingFile;
     trainingFile.createFileTraining("voice");
     //trainingFile.initNeuralFile(1500,36);
-    char lol[5] = {1,1,1,1,1};
+    char lol[5] = {'1','1','1','1','1'};
     char v[5] = {2,3,5,6,6};
-    trainingFile.addDataTrainingToFile();
+    trainingFile.addDataTrainingToFile(&lol[0]);*/
 
     Window window(w,h,&spectrograph,&argc,argv);
     return 0;

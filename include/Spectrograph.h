@@ -50,8 +50,8 @@ public:
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
 
     FIBITMAP *bitmap;
-    char *PixelArray;
-    char *VoiceArray;
+    unsigned char *PixelArray;
+    unsigned char *VoiceArray;
     MicInput micinput;
 
     int width();

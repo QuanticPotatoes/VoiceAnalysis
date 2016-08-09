@@ -32,15 +32,12 @@ Train::Train(){
 
 /**
  * @brief create a training file for the neural network
- * @details [long description]
- * 
- * @param file [description]
+ *
+ * @param file the name of the training file
  */
 void Train::createFileTraining(string file){
 
 	file_ = file + ".data";
-	//trainfile.open(file + ".data", ios::out | ios::in);
-
 }
 
 void Train::initTrainingFile(int number_input, int number_output){
@@ -49,11 +46,11 @@ void Train::initTrainingFile(int number_input, int number_output){
 	number_output_ = number_output;
 
 	trainfile.seekg(0,ios::beg); //go to the file begin
-	trainfile << "5 " <<  number_input << " " << number_output;
+	trainfile << "0 " <<  number_input << " " << number_output;
 
 }
 
-void Train::addDataTrainingToFile(){
+void Train::addDataTrainingToFile(unsigned char *input, size_t size_input){
 
 	char *tab = (char*) malloc(10);
 	char *output = (char*) malloc(10);
@@ -68,51 +65,63 @@ void Train::addDataTrainingToFile(){
 
     int num, i;
     string strTemp, fileStr;
-    trainfile >> num;
+    trainfile >> num; // The number of examples to train
 
-    for(i = 0; i < 3; i++){
- 
+    for(i = 0; i < 3; i++){ // The first line
+
         if(i == 0){
 
         	num++;
         	strTemp = to_string(num);
         }
 
-        fileStr += strTemp + " " ;//output everything to buffer string
+        fileStr += strTemp + " " ;
 
-        trainfile >> strTemp; //it will check line from test to strTemp string
+        if(i != 2){
+        	trainfile >> strTemp;
+        }
+
     }
 
-    while(getline(trainfile,strTemp)){
-    	fileStr += "\n" + strTemp;
+    trainfile.ignore();
+
+    while(getline(trainfile,strTemp)){ // All line since the new example
+
+    	fileStr += strTemp + "\n";
     }
 
     trainfile.close();
-    trainfile.open(file_, ios::out | ios::trunc); //File to read from
+    trainfile.open(file_, ios::out | ios::trunc);
 
-    cout << fileStr;
-    trainfile << fileStr;
+    trainfile << fileStr << "\n";
 
-    /*trainfile.close();
+    trainfile.close();
+    trainfile.open(file_, ios::out | ios::app);
 
-    trainfile.open(file_, ios::out | ios::app);*/
+    fileStr.clear();
 
-    //trainfile << "coucou" << "\n";
-   /* while(*tab != '\0'){
-    	cout << *tab << endl;
-    	trainfile << *tab << " ";
-    	tab++;
+    for(int i = 0; i < size_input; i++) // The input data
+    {
+
+    	fileStr += to_string((int) *input);
+    	fileStr +=  " ";
+
+    	input++;
+    	
     }
 
-    trainfile << "\n";
+    fileStr += "\n";
 
-    while(*output != '\0'){
-    	trainfile << *output << " ";
+    while(*output != '\0'){ // The results we expect
+    	fileStr += "b" ;
+    	fileStr +=  " ";
     	output++;
     }
 
-    trainfile << "\n";
-*/
+    fileStr += "\n";
+    trainfile << fileStr; // put the string in the file
+
     trainfile.close();
 
+    fileStr.clear(); // the buffile string is clear
 }

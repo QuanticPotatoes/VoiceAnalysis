@@ -44,7 +44,7 @@
 
 class Spectrograph {
 public:
-    Spectrograph(std::string fname, int width, int height);
+    Spectrograph(std::string fname, int width, int height, int train_result_number);
     
     typedef std::function<double(int, int)> Window_t;
     typedef std::vector< std::vector<std::complex<double> > > Spectrogram_t;
@@ -102,6 +102,7 @@ private:
 
     bool imageinit;
 
+    int train_result_number_;
     std::function<double(int, int)> window_;
     std::map<float, std::complex<double>> omega_cache_;
 

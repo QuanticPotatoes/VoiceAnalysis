@@ -25,6 +25,7 @@ static fstream trainfile_output;
 static string file_;
 static int number_input_;
 static int number_output_;
+static char *output;
 
 Train::Train(){
 
@@ -37,7 +38,7 @@ Train::Train(){
  */
 void Train::createFileTraining(string file){
 
-	file_ = file + ".data";
+	file_ = file + ".dat";
 }
 
 void Train::initTrainingFile(int number_input, int number_output){
@@ -50,13 +51,9 @@ void Train::initTrainingFile(int number_input, int number_output){
 
 }
 
-void Train::addDataTrainingToFile(unsigned char *input, size_t size_input){
 
-	char *tab = (char*) malloc(10);
-	char *output = (char*) malloc(10);
+void Train::addDataTrainingToFile(unsigned char *input, size_t size_input, int result){
 
-	memset(tab,'a',10);
-	memset(output,'b',10);
 
 	if(trainfile.is_open()){
 		trainfile.close();
@@ -74,6 +71,10 @@ void Train::addDataTrainingToFile(unsigned char *input, size_t size_input){
         	num++;
         	strTemp = to_string(num);
         }
+        else if(i == 2){
+
+        	number_output_ = stoi(strTemp); // Get the number of the output
+        }
 
         fileStr += strTemp + " " ;
 
@@ -82,6 +83,8 @@ void Train::addDataTrainingToFile(unsigned char *input, size_t size_input){
         }
 
     }
+
+    output = (char*) malloc(sizeof(char*) * number_output_);
 
     trainfile.ignore();
 
@@ -100,10 +103,10 @@ void Train::addDataTrainingToFile(unsigned char *input, size_t size_input){
 
     fileStr.clear();
 
-    for(int i = 0; i < size_input; i++) // The input data
+    for(i = 0; i < size_input; i++) // The input data
     {
 
-    	fileStr += to_string((int) *input);
+    	fileStr += to_string((float) *input / 100);
     	fileStr +=  " ";
 
     	input++;
@@ -112,10 +115,15 @@ void Train::addDataTrainingToFile(unsigned char *input, size_t size_input){
 
     fileStr += "\n";
 
-    while(*output != '\0'){ // The results we expect
-    	fileStr += "b" ;
+    for(i = 0; i < number_output_; i++){ // The results we expect
+    	if(i == result){
+    		fileStr += "1";
+    	}
+    	else {
+    		fileStr += "-1";
+    	}
+
     	fileStr +=  " ";
-    	output++;
     }
 
     fileStr += "\n";

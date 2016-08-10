@@ -55,9 +55,9 @@
     MicInput *mic = NULL;
     } taskStruc;
 
-Spectrograph::Spectrograph(std::string fname, int width, int height) :
+Spectrograph::Spectrograph(std::string fname, int width, int height, int train_result_number) :
     fname_(fname), file_handle_(fname), width_(width), height_(height),
-    window_(Utility::blackman_harris) {
+    window_(Utility::blackman_harris), train_result_number_(train_result_number) {
 
     spectroRefresh();
 
@@ -273,7 +273,7 @@ void Spectrograph::save_image(
                 
                 if(((int) color.rgbGreen) > 92 && ((int) color.rgbBlue) > 200 && !detect ){
                     
-                    list.front()->data[y-1] = {255,255,255,0};
+                   // list.front()->data[y-1] = {255,255,255,0};
 
                     detect = true;
                     number_voice++;
@@ -345,9 +345,9 @@ void Spectrograph::save_image(
             tmp = tmp->prev;
         }
 
-        unsigned char lol[] = {'1','1','4'};
-        std::cout << *VoiceArray ;
-        TrainingFile.addDataTrainingToFile(VoiceArray, height_ * width_ * 3);
+        if(train_result_number_ != -1){
+            TrainingFile.addDataTrainingToFile(VoiceArray, height_ * width_ * 3, train_result_number_);
+        }
     }
 
      

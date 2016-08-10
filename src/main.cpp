@@ -26,20 +26,25 @@
 
 int main(int argc, char *argv[])
 { 
-    int w = 60, h = 250;
+    int w = 60, h = 150;
     //int w = 60, h = 250;
     RGBQUAD color;
     std::string fname = "--live";
+    int number_output_train = -1;
 
     if (argc < 2){
-        std::cout << "You must specify an input file. By default the program start with (--live)." << std::endl;
+        std::cout << "By default the program start with (--live)." << std::endl;
         argv[1] = (char*) "--live";
     }
     else{
         fname = argv[1]; 
+
+        if(argc == 3){
+            number_output_train = atoi(argv[2]);
+        }
     }
 
-    Spectrograph spectrograph(fname,w,h);
+    Spectrograph spectrograph(fname,w,h,number_output_train);
 
     if (!spectrograph.file_is_valid() && !(argv[1] == "--live")){
         return -1;
